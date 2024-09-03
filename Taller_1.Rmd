@@ -1,88 +1,148 @@
 ---
-title: "Taller_1_Programación_R"
-author: "Mario Mercado - José David Urrego"
-date: "2024-08-27"
-output: html_document
+title: "Taller#1_R"
+author: "Jose D Cuervo & Mario_Mercado"
+date: "2024-08-26"
+output: pdf_document
 ---
 
-# 1) Primer Punto
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-## 1.1) Definición de la semilla
+#Taller Programación en R - Taller 1
+##Primer Punto
+### 1.1 Definan una semilla para trabajar durante el script. Respondan: ¿Por qué es importante definir una semilla?
 
 ```{r}
+install.packages("tidyverse")
+set.seed(3589)
+?set.seed
+rnorm(5)
+```
+
+Generar una semilla nos permite generar numeros pseudoaleatorios. 
+
+¿Por qué es importante definir una semilla?
+1. Si conocemos la semilla y el generador, puedes predecir (y reproducir) la secuencia.
+2. Ayudar a depurar el código cuando trabajes con números pseudoaleatorios.
+
+```{r}
+set.seed(3589)
+rnorm(5)
+```
+### 1.2 Primero, creen los siguientes 4 vectores: uno que varíe de 1 en 1 desde el 1 hasta el 50. Este corresponde al identificador del individuo.  Segundo, un vector de clase int llamado edad que se distribuya de forma uniforme entre el intervalo 5 a 50. Tercero, un vector que repita el carácter “años” y un vector de 50 nombres propios aleatorios de personas. Todas las cuatro (4) listas deben tener el mismo tamaño.  
+
+```{r}
+set.seed(3589)
+ID <- seq(1, 50, by = 1)
+Edad <- as.integer(runif(50, min = 5, max = 50 ))
+Años <- rep("años", 50)
+nom <-c("JUAN","MARIO","JOSE","MARIA","ALEJANDRA","CAMILA","ROXANA","JORGE")
+apel <- c("MERCADO","CUERVO","MORALES","AGUILAR","RAMIREZ","PERALTA","OCAMPO","ROMERO")
+nom_base <- sample(nom,50,replace = TRUE)
+apel_base <- sample(apel,50,replace = TRUE)
+Noms <- sample(nom_base, 50)
+ApesP <- sample(apel_base, 50)
+ApesM <- sample(apel_base, 50)
+Nombres <- paste(Noms,ApesP,ApesM)
+rm(apel,nom_base,nom,apel_base,Noms,ApesP,ApesM)
+```
+
+Nota: Cuando se incrementa el número de observaciones generadas, el histograma se aproxima a la función de densidad uniforme real.
+
+```{r}
+library(ggplot2)
+hist(x = Edad) 
+```
+
+### 1.3	Creen un vector en el que cada elemento j sea la concatenación de los elementos j de los vectores del punto anterior. Ordenen y/o agreguen caracteres a cada elemento de la lista para que se consolide una oración con orden semántico que refleje la edad del individuo. Para esto, utilicen la función pasteo()
+
+```{r}
+Base <- paste0("El individuo Número ",ID," se llama ",Nombres," tiene ",Edad," ",Años," de edad")
+```
+
+### 1.4	Usando un loop realicen un código que presente (print) la concatenación lógica de la edad, nombre y años de cada uno de los individuos dentro de las listas, pero únicamente si el nombre del individuo empieza por una letra distinta de J y la edad sea distinta de un número par. Es decir, el resultado debería ser algo similar a: “Camilo tiene 29 años”
+
+```{r}
+for (i in 1:length(Nombres)){
+  Nombre <- Nombres[i] 
+  Edades <- Edad[i]
+  Año <-Años[i]
+  
+if (!startsWith(Nombre, 'J') && Edades %% 2 != 0) { print(paste(Nombre, "tiene", Edades, Año)) } } 
 
 ```
 
-## 1.2) Definición de la semilla
+### 1.5)	Programen una función que tome como entrada un vector con valores numéricos y que su output sea el promedio de los valores del vector y la desviación estándar asociada a la misma muestra. Usando esta función respondan: ¿Cuál es la edad promedio de su lista? ¿Cuál es la desviación estándar? 
 
 ```{r}
+Fun_Vec <- function(vector) 
+
+{ 
+  promedio <- mean(vector) 
+  desviacion_estandar <- sd(vector) 
+
+return(list(promedio = promedio, desviacion_estandar = desviacion_estandar)) 
+}
+
+Result <- Fun_Vec(Edad) 
+cat("Edad promedio:", Result$promedio, "\n") 
+cat("Desviación estándar:", Result$desviacion_estandar, "\n")
+```
+
+### 1.6 Programen una función que tome como entrada un vector con valores numéricos y estandarice los valores. Es decir, que los transforme a una normal estándar. Apliquen las funciones que desarrollaron en el literal 1.5) dentro de la función que propongan en este literal. 
+
+```{r}
+Fun_Vec <- function(vector) 
+{ 
+  promedio <- mean(vector) 
+  desviacion_estandar <- sd(vector) 
+Vect_Estan <- (vector - promedio) / desviacion_estandar
+
+return(list(
+  Vect_Estan = Vect_Estan,
+  promedio = promedio,
+  desviacion_estandar = desviacion_estandar
+))
+  }
 
 ```
 
-## 1.3) Definición de la semilla
+
+### 1.7 Apliquen la función programada en el literal 1.6) para crear un vector con la edad estandarizada. Llamen este nuevo vector como eda〖dstd〗_i
 
 ```{r}
+eda_dstd <- Fun_Vec(Edad) 
+print(eda_dstd)
+```
+
+### 1.8 Por otra parte, generen una lista llamada outcomes_nominales. Esta lista contendrá 3 vectores de 50 observaciones cada uno con los outcomes de interés: salario, índice de salud, experiencia laboral. Para esto, cada una de estas variables tiene que seguir el siguiente proceso generador de datos. 
+
+#### (1)  salario_i=2+3eda〖dstd〗_i+e_i
+#### (2)  salario_i=5-3〖eda〖dstd〗_i〗_i-〖eda〖dstd〗_i〗^2+e_i
+#### (3)  salario_i=2+e_i
+
+#### Para todos los procesos e_i corresponde a un error proveniente de una distribución normal con media 0 y varianza 1. 
+
+```{r}
+set.seed(3589)
+n <- 50
+
+#Generación_de Variables
+salario_1 <- 2 + 3 * eda_dstd + e
+Indice_de_Salud <- 5 - 3 * eda_dstd - eda_dstd^2 + e
+Experiencia <- 2 + e
 
 ```
 
-## 1.4) Definición de la semilla
 
-```{r}
+### 1.9	Creen una función que permita convertir un vector en una matriz para la estimación de una regresión lineal simple. Para esto, la función debe tomar como input un vector y debe tener como output una matriz X que concatene los datos de este vector y un vector de 1´s. 
 
-```
+### 1.10	A partir de la función anterior consoliden una matriz X con la edad de los individuos estandarizada y un vector de 1´s asociado a una constante.
 
-## 1.5) Definición de la semilla
+## Segundo Punto
+### 2.1 	Programen una función que tome como input una matriz X y un vector〖 y〗_i, posteriormente, el output debe corresponder a una estimación puntual del estimador (β_1) de Mínimos Cuadrados Ordinarios (MCO) para la muestra y a su error estándar asociado (σ_β). 
 
-```{r}
+### 2.2 	Programen una función que tome como input una matriz X y un vector〖 y〗_i, posteriormente, el output debe corresponder a una estimación puntual del estimador (β_1) de Mínimos Cuadrados Ordinarios (MCO) para la muestra y a su error estándar asociado (σ_β). 
 
-```
-
-## 1.6) Definición de la semilla
-
-```{r}
-
-```
-
-## 1.7) Definición de la semilla
-
-```{r}
-
-```
-
-## 1.8) Definición de la semilla
-
-```{r}
-
-```
-
-## 1.9) Definición de la semilla
-
-```{r}
-
-```
-
-## 1.10) Definición de la semilla
-
-```{r}
-
-```
-
-# 2) Segundo Punto (Análisis Econométrico)
-
-## 2.1) Definición de la semilla
-
-```{r}
-
-```
-
-## 2.2) Definición de la semilla
-
-```{r}
-
-```
-
-## 2.3) Definición de la semilla
-
-```{r}
-
-```
+### 2.3 	Programen una función que tome como input una matriz X y un vector〖 y〗_i, posteriormente, el output debe corresponder a una estimación puntual del estimador (β_1) de Mínimos Cuadrados Ordinarios (MCO) para la muestra y a su error estándar asociado (σ_β). 
